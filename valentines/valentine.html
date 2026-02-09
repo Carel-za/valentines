@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Be My Valentine?</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Completely white background before the video appears */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #fff;
+            font-family: Arial, sans-serif;
+            overflow: auto; /* allow scrolling when viewport is smaller than fixed site size */
+        }
+        .container {
+            text-align: center;
+            background: transparent;
+            padding: 40px;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        h1 {
+            color: black;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+        }
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border: 2px solid;
+            border-radius: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            background-color: transparent;
+            font-family: Arial, sans-serif;
+        }
+        #yesBtn {
+            border-color: #27ae60;
+            background-color: #27ae60;
+            color: black;
+        }
+        #yesBtn:hover {
+            background-color: #1e8449;
+            transform: scale(1.05);
+        }
+        #noBtn {
+            border-color: #e74c3c;
+            background-color: #e74c3c;
+            color: black;
+        }
+        #noBtn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Fixed-size site container (keeps 1792x828 on large screens, scales down on smaller viewports) */
+        #siteContainer {
+            width: min(1792px, 100vw);
+            max-width: 1792px;
+            aspect-ratio: 1792 / 828;
+            position: relative;
+            overflow: hidden;
+            background-color: #fff;
+            display: none; /* hidden until Yes is clicked */
+            box-sizing: border-box;
+        }
+
+        /* Video fills the container and preserves full frame (letterboxed if needed) */
+        #videoBackground {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+            object-position: center center;
+            cursor: pointer;
+            background-color: #fff;
+        }
+
+        /* Ensure message positions correctly on small screens */
+        #valentineMessage {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translate(-50%, -10px);
+            color: black;
+            font-size: 28px;
+            font-weight: 700;
+            background: transparent;
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            z-index: 10;
+            pointer-events: none;
+            padding: 0 12px;
+            white-space: nowrap;
+        }
+        @media (max-width: 420px) {
+            #valentineMessage { font-size: 18px; white-space: normal; }
+        }
+        /* Message shown after Yes click */
+        #valentineMessage {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translate(-50%, -10px);
+            color: #e74c3c;
+            font-size: 28px;
+            font-weight: 700;
+            background: transparent;
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            z-index: 10;
+            pointer-events: none;
+        }
+        #valentineMessage.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="prompt">
+        <h1>Will you be my Valentine? <span style="color: black;">&lt;3</span></h1>
+        <div class="button-container">
+            <button id="yesBtn">Yes ;)</button>
+            <button id="noBtn">No :(</button>
+        </div>
+    </div>
+
+    <div id="siteContainer">
+        <div id="valentineMessage"><h1>Happy valentines i love you liefie<span style="color: black;">&lt;3</span></h1></div>
+        <video id="videoBackground" playsinline>
+            <source src="video.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <script>
+        let noScale = 1;
+        let yesScale = 1;
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const prompt = document.getElementById('prompt');
+        const siteContainer = document.getElementById('siteContainer');
+        const video = document.getElementById('videoBackground');
+
+        noBtn.addEventListener('click', () => {
+            noScale *= 0.8;
+            
+            if (noScale <= 0.05) {
+                noBtn.remove();
+                // Make yes button fill the screen
+                yesBtn.style.position = 'fixed';
+                yesBtn.style.width = '100vw';
+                yesBtn.style.height = '100vh';
+                yesBtn.style.top = '0';
+                yesBtn.style.left = '0';
+                yesBtn.style.borderRadius = '0';
+                yesBtn.style.transform = 'scale(1)';
+                yesBtn.style.fontSize = '80px';
+                yesBtn.style.padding = '0';
+                yesBtn.style.margin = '0';
+            } else {
+                noBtn.style.transform = `scale(${noScale})`;
+                yesScale *= 1.2;
+                yesBtn.style.transform = `scale(${yesScale})`;
+            }
+        });
+
+        yesBtn.addEventListener('click', async () => {
+            // Hide the prompt, show the fixed-size container and play the video
+            prompt.style.display = 'none';
+            siteContainer.style.display = 'block';
+            console.log('Video element:', video);
+            console.log('Video source:', video.querySelector('source').src);
+            try {
+                await video.play();
+                console.log('Video playing successfully');
+            } catch (e) {
+                console.warn('Playback failed:', e);
+                console.log('Video readyState:', video.readyState);
+                console.log('Video networkState:', video.networkState);
+            }
+
+            // Show the valentines message after 2 seconds
+            const valentineMessage = document.getElementById('valentineMessage');
+            setTimeout(() => {
+                valentineMessage.classList.add('show');
+            }, 2000);
+        });
+
+        // Allow click to toggle play/pause on the video itself
+        video.addEventListener('click', () => {
+            if (video.paused) video.play(); else video.pause();
+        });
+    </script>
+</body>
+</html>
